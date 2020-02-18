@@ -161,6 +161,10 @@ this.addEventListener("message", function(e) {
 				//Safari also needs the IE11 workaround but only for the MPOT version
 				settings.forceIE11Workaround = true;
 			}
+			if (/iP(hone|(o|a)d)/.test(navigator.userAgent)) {
+				// iOS also needs the IE11 workaround (ex. Google Chrome iOS)
+				settings.forceIE11Workaround = true;
+			}
 			//telemetry_level has to be parsed and not just copied
 			if (typeof s.telemetry_level !== "undefined") settings.telemetry_level = s.telemetry_level === "basic" ? 1 : s.telemetry_level === "full" ? 2 : s.telemetry_level === "debug" ? 3 : 0; // telemetry level
 			//transform test_order to uppercase, just in case
