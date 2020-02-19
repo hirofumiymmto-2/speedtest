@@ -161,7 +161,8 @@ this.addEventListener("message", function(e) {
 				//Safari also needs the IE11 workaround but only for the MPOT version
 				settings.forceIE11Workaround = true;
 			}
-			if (/iP(hone|(o|a)d)/.test(navigator.userAgent)) {
+			var isIOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+			if (isIOS) {
 				// iOS also needs the IE11 workaround (ex. Google Chrome iOS)
 				settings.forceIE11Workaround = true;
 			}
