@@ -440,7 +440,12 @@ function ulTest(done) {
 		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
 	} catch (e) {}
 	var req = [];
-	var reqsmall = [];
+	var reqsmall1 = [];
+	var reqsmall2 = [];
+	var reqsmall3 = [];
+	var reqsmall4 = [];
+	var reqsmall5 = [];
+
 	for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
 	req = new Blob(req);
 	r = new ArrayBuffer(262144);
@@ -448,8 +453,43 @@ function ulTest(done) {
 		r = new Uint32Array(r);
 		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
 	} catch (e) {}
-	reqsmall.push(r);
-	reqsmall = new Blob(reqsmall);
+	reqsmall1.push(r);
+	reqsmall1 = new Blob(reqsmall1);
+
+	r = new ArrayBuffer(524288);
+	try {
+		r = new Uint32Array(r);
+		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+	} catch (e) {}
+	reqsmall2.push(r);
+	reqsmall2 = new Blob(reqsmall2);
+
+	r = new ArrayBuffer(1048576);
+	try {
+		r = new Uint32Array(r);
+		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+	} catch (e) {}
+	reqsmall3.push(r);
+	reqsmall3 = new Blob(reqsmall3);
+
+	r = new ArrayBuffer(2097152);
+	try {
+		r = new Uint32Array(r);
+		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+	} catch (e) {}
+	reqsmall4.push(r);
+	reqsmall4 = new Blob(reqsmall4);
+
+	r = new ArrayBuffer(3097152);
+	try {
+		r = new Uint32Array(r);
+		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+	} catch (e) {}
+	reqsmall5.push(r);
+	reqsmall5 = new Blob(reqsmall5);
+
+	ieUlTestCount = 0;
+
 	var testFunction = function() {
 		var totLoaded = 0.0, // total number of transmitted bytes
 			startT = new Date().getTime(), // timestamp when test was started
@@ -480,7 +520,17 @@ function ulTest(done) {
 						// IE11 workarond: xhr.upload does not work properly, therefore we send a bunch of small 256k requests and use the onload event as progress. This is not precise, especially on fast connections
 						xhr[i].onload = xhr[i].onerror = function() {
 							tverb("ul stream progress event (ie11wa)");
-							totLoaded += reqsmall.size;
+							if (5 > ieUlTestCount) {
+								totLoaded += reqsmall1.size;
+							} else if (10 > ieUlTestCount) {
+								totLoaded += reqsmall2.size;
+							} else if (15 > ieUlTestCount) {
+								totLoaded += reqsmall3.size;
+							} else if (20 > ieUlTestCount) {
+								totLoaded += reqsmall4.size;
+							} else {
+								totLoaded += reqsmall5.size;
+							}
 							testStream(i, 0);
 						};
 						xhr[i].open("POST", settings.url_ul + url_sep(settings.url_ul) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
@@ -488,7 +538,18 @@ function ulTest(done) {
 							xhr[i].setRequestHeader("Content-Encoding", "identity"); // disable compression (some browsers may refuse it, but data is incompressible anyway)
 						} catch (e) {}
 						//No Content-Type header in MPOT branch because it triggers bugs in some browsers
-						xhr[i].send(reqsmall);
+						if (5 > ieUlTestCount) {
+							xhr[i].send(reqsmall1);
+						} else if (10 > ieUlTestCount) {
+							xhr[i].send(reqsmall2);
+						} else if (15 > ieUlTestCount) {
+							xhr[i].send(reqsmall3);
+						} else if (20 > ieUlTestCount) {
+							xhr[i].send(reqsmall4);
+						} else {
+							xhr[i].send(reqsmall5);
+						}
+						ieUlTestCount += 1;
 					} else {
 						// REGULAR version, no workaround
 						xhr[i].upload.onprogress = function(event) {
