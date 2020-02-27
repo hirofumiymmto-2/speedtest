@@ -61,6 +61,7 @@ var settings = {
 	enable_quirks: true, // enable quirks for specific browsers. currently it overrides settings to optimize for specific browsers, unless they are already being overridden with the start command
 	ping_allowPerformanceApi: true, // if enabled, the ping test will attempt to calculate the ping more precisely using the Performance API. Currently works perfectly in Chrome, badly in Edge, and not at all in Firefox. If Performance API is not supported or the result is obviously wrong, a fallback is provided.
 	overheadCompensationFactor: 1.06, //can be changed to compensatie for transport overhead. (see doc.md for some other values)
+	uploadOverheadCompensationFactor: 1.06, //can be changed to compensatie for transport overhead. (see doc.md for some other values)
 	useMebibits: false, //if set to true, speed will be reported in mebibits/s instead of megabits/s
 	telemetry_level: 0, // 0=disabled, 1=basic (results only), 2=full (results and timing) 3=debug (results+log)
 	url_telemetry: "results/telemetry.php", // path to the script that adds telemetry data to the database
@@ -621,7 +622,7 @@ function ulTest(done) {
 						bonusT += bonus > 800 ? 800 : bonus;
 					}
 					//update status
-					ulStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+					ulStatus = ((speed * 8 * settings.uploadOverheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
 					if ((t + bonusT) / 1000.0 > settings.time_ul_max || failed) {
 						// test is over, stop streams and timer
 						if (failed || isNaN(ulStatus)) ulStatus = "Fail";
