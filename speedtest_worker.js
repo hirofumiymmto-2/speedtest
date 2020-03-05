@@ -442,6 +442,7 @@ function ulTest(done) {
 		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
 	} catch (e) {}
 	var req = [];
+	var reqsmall00 = [];
 	var reqsmall0 = [];
 	var reqsmall1 = [];
 	var reqsmall2 = [];
@@ -451,6 +452,14 @@ function ulTest(done) {
 
 	for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
 	req = new Blob(req);
+
+	r = new ArrayBuffer(16384);
+	try {
+		r = new Uint32Array(r);
+		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+	} catch (e) {}
+	reqsmall00.push(r);
+	reqsmall00 = new Blob(reqsmall00);
 
 	r = new ArrayBuffer(65536);
 	try {
@@ -533,14 +542,16 @@ function ulTest(done) {
 						xhr[i].onload = xhr[i].onerror = function() {
 							tverb("ul stream progress event (ie11wa)");
 							if (5 > ieUlTestCount) {
-								totLoaded += reqsmall0.size;
+								totLoaded += reqsmall00.size;
 							} else if (10 > ieUlTestCount) {
-								totLoaded += reqsmall1.size;
+								totLoaded += reqsmall0.size;
 							} else if (15 > ieUlTestCount) {
-								totLoaded += reqsmall2.size;
+								totLoaded += reqsmall1.size;
 							} else if (20 > ieUlTestCount) {
-								totLoaded += reqsmall3.size;
+								totLoaded += reqsmall2.size;
 							} else if (25 > ieUlTestCount) {
+								totLoaded += reqsmall3.size;
+							} else if (30 > ieUlTestCount) {
 								totLoaded += reqsmall4.size;
 							} else {
 								totLoaded += reqsmall5.size;
@@ -553,14 +564,16 @@ function ulTest(done) {
 						} catch (e) {}
 						//No Content-Type header in MPOT branch because it triggers bugs in some browsers
 						if (5 > ieUlTestCount) {
-							xhr[i].send(reqsmall0);
+							xhr[i].send(reqsmall00);
 						} else if (10 > ieUlTestCount) {
-							xhr[i].send(reqsmall1);
+							xhr[i].send(reqsmall0);
 						} else if (15 > ieUlTestCount) {
-							xhr[i].send(reqsmall2);
+							xhr[i].send(reqsmall1);
 						} else if (20 > ieUlTestCount) {
-							xhr[i].send(reqsmall3);
+							xhr[i].send(reqsmall2);
 						} else if (25 > ieUlTestCount) {
+							xhr[i].send(reqsmall3);
+						} else if (30 > ieUlTestCount) {
 							xhr[i].send(reqsmall4);
 						} else {
 							xhr[i].send(reqsmall5);
