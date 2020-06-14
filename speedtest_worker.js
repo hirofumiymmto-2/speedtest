@@ -65,7 +65,9 @@ var settings = {
 	useMebibits: false, //if set to true, speed will be reported in mebibits/s instead of megabits/s
 	telemetry_level: 0, // 0=disabled, 1=basic (results only), 2=full (results and timing) 3=debug (results+log)
 	url_telemetry: "results/telemetry.php", // path to the script that adds telemetry data to the database
-	telemetry_extra: "" //extra data that can be passed to the telemetry through the settings
+	telemetry_extra: "", //extra data that can be passed to the telemetry through the settings
+	enableGigaUploadOnIE11workaround: false, // enables N Gbps upload test if ie11workaround is true
+	forceIE11Workaround: false // if set to true, speedtest works as IE11 browser even if not IE11 browser
 };
 
 var xhr = null; // array of currently active xhr requests
@@ -449,6 +451,8 @@ function ulTest(done) {
 	var reqsmall3 = [];
 	var reqsmall4 = [];
 	var reqsmall5 = [];
+	var reqsmall6 = [];
+	var reqsmall7 = [];
 
 	for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
 	req = new Blob(req);
@@ -509,6 +513,24 @@ function ulTest(done) {
 	reqsmall5.push(r);
 	reqsmall5 = new Blob(reqsmall5);
 
+	if (settings.enableGigaUploadOnIE11workaround) {
+		r = new ArrayBuffer(6194304);
+		try {
+			r = new Uint32Array(r);
+			for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+		} catch (e) {}
+		reqsmall6.push(r);
+		reqsmall6 = new Blob(reqsmall6);
+
+		r = new ArrayBuffer(12388608);
+		try {
+			r = new Uint32Array(r);
+			for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+		} catch (e) {}
+		reqsmall7.push(r);
+		reqsmall7 = new Blob(reqsmall7);
+	}
+
 	ieUlTestCount = 0;
 
 	var testFunction = function() {
@@ -541,20 +563,42 @@ function ulTest(done) {
 						// IE11 workarond: xhr.upload does not work properly, therefore we send a bunch of small 256k requests and use the onload event as progress. This is not precise, especially on fast connections
 						xhr[i].onload = xhr[i].onerror = function() {
 							tverb("ul stream progress event (ie11wa)");
-							if (5 > ieUlTestCount) {
-								totLoaded += reqsmall00.size;
-							} else if (10 > ieUlTestCount) {
-								totLoaded += reqsmall0.size;
-							} else if (15 > ieUlTestCount) {
-								totLoaded += reqsmall1.size;
-							} else if (20 > ieUlTestCount) {
-								totLoaded += reqsmall2.size;
-							} else if (25 > ieUlTestCount) {
-								totLoaded += reqsmall3.size;
-							} else if (30 > ieUlTestCount) {
-								totLoaded += reqsmall4.size;
+							if (settings.enableGigaUploadOnIE11workaround) {
+								if (5 > ieUlTestCount) {
+									totLoaded += reqsmall00.size;
+								} else if (10 > ieUlTestCount) {
+									totLoaded += reqsmall0.size;
+								} else if (15 > ieUlTestCount) {
+									totLoaded += reqsmall1.size;
+								} else if (20 > ieUlTestCount) {
+									totLoaded += reqsmall2.size;
+								} else if (25 > ieUlTestCount) {
+									totLoaded += reqsmall3.size;
+								} else if (30 > ieUlTestCount) {
+									totLoaded += reqsmall4.size;
+								} else if (35 > ieUlTestCount) {
+									totLoaded += reqsmall5.size;
+								} else if (40 > ieUlTestCount) {
+									totLoaded += reqsmall6.size;
+								} else {
+									totLoaded += reqsmall7.size;
+								}
 							} else {
-								totLoaded += reqsmall5.size;
+								if (5 > ieUlTestCount) {
+									totLoaded += reqsmall00.size;
+								} else if (10 > ieUlTestCount) {
+									totLoaded += reqsmall0.size;
+								} else if (15 > ieUlTestCount) {
+									totLoaded += reqsmall1.size;
+								} else if (20 > ieUlTestCount) {
+									totLoaded += reqsmall2.size;
+								} else if (25 > ieUlTestCount) {
+									totLoaded += reqsmall3.size;
+								} else if (30 > ieUlTestCount) {
+									totLoaded += reqsmall4.size;
+								} else {
+									totLoaded += reqsmall5.size;
+								}
 							}
 							testStream(i, 0);
 						};
@@ -563,20 +607,42 @@ function ulTest(done) {
 							xhr[i].setRequestHeader("Content-Encoding", "identity"); // disable compression (some browsers may refuse it, but data is incompressible anyway)
 						} catch (e) {}
 						//No Content-Type header in MPOT branch because it triggers bugs in some browsers
-						if (5 > ieUlTestCount) {
-							xhr[i].send(reqsmall00);
-						} else if (10 > ieUlTestCount) {
-							xhr[i].send(reqsmall0);
-						} else if (15 > ieUlTestCount) {
-							xhr[i].send(reqsmall1);
-						} else if (20 > ieUlTestCount) {
-							xhr[i].send(reqsmall2);
-						} else if (25 > ieUlTestCount) {
-							xhr[i].send(reqsmall3);
-						} else if (30 > ieUlTestCount) {
-							xhr[i].send(reqsmall4);
+						if (settings.enableGigaUploadOnIE11workaround) {
+							if (5 > ieUlTestCount) {
+								xhr[i].send(reqsmall00);
+							} else if (10 > ieUlTestCount) {
+								xhr[i].send(reqsmall0);
+							} else if (15 > ieUlTestCount) {
+								xhr[i].send(reqsmall1);
+							} else if (20 > ieUlTestCount) {
+								xhr[i].send(reqsmall2);
+							} else if (25 > ieUlTestCount) {
+								xhr[i].send(reqsmall3);
+							} else if (30 > ieUlTestCount) {
+								xhr[i].send(reqsmall4);
+							} else if (35 > ieUlTestCount) {
+								xhr[i].send(reqsmall5);
+							} else if (40 > ieUlTestCount) {
+								xhr[i].send(reqsmall6);
+							} else {
+								xhr[i].send(reqsmall7);
+							}
 						} else {
-							xhr[i].send(reqsmall5);
+							if (5 > ieUlTestCount) {
+								xhr[i].send(reqsmall00);
+							} else if (10 > ieUlTestCount) {
+								xhr[i].send(reqsmall0);
+							} else if (15 > ieUlTestCount) {
+								xhr[i].send(reqsmall1);
+							} else if (20 > ieUlTestCount) {
+								xhr[i].send(reqsmall2);
+							} else if (25 > ieUlTestCount) {
+								xhr[i].send(reqsmall3);
+							} else if (30 > ieUlTestCount) {
+								xhr[i].send(reqsmall4);
+							} else {
+								xhr[i].send(reqsmall5);
+							}
 						}
 						ieUlTestCount += 1;
 					} else {
