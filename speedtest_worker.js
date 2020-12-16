@@ -452,6 +452,7 @@ function ulTest(done) {
 	var reqsmall5 = [];
 	var reqsmall6 = [];
 	var reqsmall7 = [];
+	var reqsmall8 = [];
 
 	for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
 	req = new Blob(req);
@@ -528,6 +529,14 @@ function ulTest(done) {
 		} catch (e) {}
 		reqsmall7.push(r);
 		reqsmall7 = new Blob(reqsmall7);
+
+		r = new ArrayBuffer(24777216);
+		try {
+			r = new Uint32Array(r);
+			for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+		} catch (e) {}
+		reqsmall8.push(r);
+		reqsmall8 = new Blob(reqsmall8);
 	}
 
 	ieUlTestCount = 0;
@@ -579,8 +588,10 @@ function ulTest(done) {
 									totLoaded += reqsmall5.size;
 								} else if (40 > ieUlTestCount) {
 									totLoaded += reqsmall6.size;
-								} else {
+								} else if (45 > ieUlTestCount) {
 									totLoaded += reqsmall7.size;
+								} else {
+									totLoaded += reqsmall8.size;
 								}
 							} else {
 								if (5 > ieUlTestCount) {
@@ -623,8 +634,10 @@ function ulTest(done) {
 								xhr[i].send(reqsmall5);
 							} else if (40 > ieUlTestCount) {
 								xhr[i].send(reqsmall6);
-							} else {
+							} else if (45 > ieUlTestCount) {
 								xhr[i].send(reqsmall7);
+							} else {
+								xhr[i].send(reqsmall8);
 							}
 						} else {
 							if (5 > ieUlTestCount) {
