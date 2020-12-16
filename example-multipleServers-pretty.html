@@ -32,7 +32,7 @@ var SPEEDTEST_SERVERS=[
 
 //INITIALIZE SPEEDTEST
 var s=new Speedtest(); //create speedtest object
-s.addTestPoints(SPEEDTEST_SERVERS); //add list of servers
+
 s.onupdate=function(data){ //callback to update data in UI
     I("ip").textContent=data.clientIp;
     I("dlText").textContent=(data.testState==1&&data.dlStatus==0)?"...":data.dlStatus;
@@ -46,13 +46,29 @@ s.onend=function(aborted){ //callback for test ended/aborted
 		initUI();
     }
 }
-function selectServer(){ //called when the page is fully loaded
-    I("startStopBtn").style.display="none"; //hide start/stop button during server selection
+function selectServer(){ //called after loading server list
     s.selectServer(function(server){ //run server selection. When the server has been selected, display it in the UI
         I("startStopBtn").style.display=""; //show start/stop button again
         I("serverId").textContent=server.name; //show name of test server
     });
 }
+function loadServers(){ //called when the page is fully loaded
+    I("startStopBtn").style.display="none"; //hide start/stop button during server selection
+    if(typeof SPEEDTEST_SERVERS === "string"){
+        //load servers from url
+        s.loadServerList(SPEEDTEST_SERVERS,function(servers){
+            //list loaded
+            SPEEDTEST_SERVERS=servers;
+            selectServer();
+        });
+    }else{
+        //hardcoded list of servers, already loaded
+        s.addTestPoints(SPEEDTEST_SERVERS);
+        selectServer();
+    }
+    
+}
+
 
 
 function startStop(){ //start/stop button pressed
@@ -219,7 +235,7 @@ function I(id){return document.getElementById(id);}
 <a href="https://github.com/librespeed/speedtest">Source code</a>
 <script type="text/javascript">
     initUI();
-    selectServer();
+    loadServers();
 </script>
 </body>
 </html>

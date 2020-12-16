@@ -32,29 +32,48 @@ var SPEEDTEST_SERVERS=[
 //INITIALIZE SPEEDTEST
 var s=new Speedtest(); //create speedtest object
 s.setParameter("telemetry_level","basic"); //enable telemetry
-s.addTestPoints(SPEEDTEST_SERVERS); //add list of servers
 
 //SERVER AUTO SELECTION
 function initServers(){
-	s.selectServer(function(server){
-		if(server!=null){ //at least 1 server is available
-			I("loading").className="hidden"; //hide loading message
-			//populate server list for manual selection
-			for(var i=0;i<SPEEDTEST_SERVERS.length;i++){
-				if(SPEEDTEST_SERVERS[i].pingT==-1) continue;
-				var option=document.createElement("option");
-				option.value=i;
-				option.textContent=SPEEDTEST_SERVERS[i].name;
-				if(SPEEDTEST_SERVERS[i]===server) option.selected=true;
-				I("server").appendChild(option);
-			}
-			//show test UI
-			I("testWrapper").className="visible";
-			initUI();
-		}else{ //no servers are available, the test cannot proceed
-			I("message").innerHTML="No servers available";
-		}
-	});
+    var noServersAvailable=function(){
+        I("message").innerHTML="No servers available";
+    }
+    var runServerSelect=function(){
+        s.selectServer(function(server){
+            if(server!=null){ //at least 1 server is available
+                I("loading").className="hidden"; //hide loading message
+                //populate server list for manual selection
+                for(var i=0;i<SPEEDTEST_SERVERS.length;i++){
+                    if(SPEEDTEST_SERVERS[i].pingT==-1) continue;
+                    var option=document.createElement("option");
+                    option.value=i;
+                    option.textContent=SPEEDTEST_SERVERS[i].name;
+                    if(SPEEDTEST_SERVERS[i]===server) option.selected=true;
+                    I("server").appendChild(option);
+                }
+                //show test UI
+                I("testWrapper").className="visible";
+                initUI();
+            }else{ //no servers are available, the test cannot proceed
+                noServersAvailable();
+            }
+        });
+    }
+    if(typeof SPEEDTEST_SERVERS === "string"){
+        //need to fetch list of servers from specified URL
+        s.loadServerList(SPEEDTEST_SERVERS,function(servers){
+            if(servers==null){ //failed to load server list
+                noServersAvailable();
+            }else{ //server list loaded
+                SPEEDTEST_SERVERS=servers;
+                runServerSelect();
+            }
+        });
+    }else{
+        //hardcoded server list
+        s.addTestPoints(SPEEDTEST_SERVERS);
+        runServerSelect();
+    }
 }
 
 var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
@@ -333,8 +352,15 @@ function initUI(){
         text-align:center;
         font-size:0.8em;
         color:#808080;
-        display:block;
+        padding: 0 3em;
 	}
+    div.closePrivacyPolicy {
+        width: 100%;
+        text-align: center;
+    }
+    div.closePrivacyPolicy a.privacy {
+        padding: 1em 3em;
+    }
 	@media all and (max-width:40em){
 		body{
 			font-size:0.8em;
@@ -375,7 +401,7 @@ function initUI(){
 	<p id="message"><span class="loadCircle"></span>Selecting a server...</p>
 </div>
 <div id="testWrapper" class="hidden">
-	<div id="startStopBtn" onclick="startStop()"></div>
+	<div id="startStopBtn" onclick="startStop()"></div><br/>
 	<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
 	<div id="serverArea">
 		Server: <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
@@ -455,7 +481,10 @@ function initUI(){
         Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE">TO BE FILLED BY DEVELOPER</a>.
     </p>
     <br/><br/>
-    <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a><br/>
+    <div class="closePrivacyPolicy">
+        <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a>
+    </div>
+    <br/>
 </div>
 </body>
 </html>
