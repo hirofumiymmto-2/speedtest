@@ -327,7 +327,7 @@ function getIp(done) {
 // download test, calls done function when it's over
 var dlCalled = false; // used to prevent multiple accidental calls to dlTest
 function dlTest(done) {
-	hasOneGbpsDownloadSpeed = false;
+	hasOneGbpsDownloadSpeedOrMore = false;
 	tverb("dlTest");
 	if (dlCalled) return;
 	else dlCalled = true; // dlTest already called?
@@ -418,8 +418,8 @@ function dlTest(done) {
 				}
 				//update status
 				dlStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
-				if (dlStatus > 1000 && !hasOneGbpsDownloadSpeed) {
-					hasOneGbpsDownloadSpeed = true;
+				if (dlStatus > 1000 && !hasOneGbpsDownloadSpeedOrMore) {
+					hasOneGbpsDownloadSpeedOrMore = true;
 				}
 				if ((t + bonusT) / 1000.0 > settings.time_dl_max || failed) {
 					// test is over, stop streams and timer
@@ -460,7 +460,7 @@ function ulTest(done) {
 	var reqsmall7 = [];
 	var reqsmall8 = [];
 
-	if (settings.increase_xhr_ul_blob_megabytes && hasOneGbpsDownloadSpeed) {
+	if (settings.increase_xhr_ul_blob_megabytes && hasOneGbpsDownloadSpeedOrMore) {
 		var xhr_ul_blob_megabytes = settings.xhr_ul_blob_megabytes * settings.rate_of_xhr_ul_blob_megabytes_to_increase;
 		for (var i = 0; i < xhr_ul_blob_megabytes; i++) req.push(r);
 		req = new Blob(req);
