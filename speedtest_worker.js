@@ -57,6 +57,8 @@ var settings = {
 	xhr_ignoreErrors: 1, // 0=fail on errors, 1=attempt to restart a stream if it fails, 2=ignore all errors
 	xhr_dlUseBlob: false, // if set to true, it reduces ram usage but uses the hard drive (useful with large garbagePhp_chunkSize and/or high xhr_dlMultistream)
 	xhr_ul_blob_megabytes: 20, //size in megabytes of the upload blobs sent in the upload test (forced to 4 on chrome mobile)
+	increase_xhr_ul_blob_megabytes: false, // increase xhr_ul_blob_megabytes if download speed is super fast
+	rate_of_xhr_ul_blob_megabytes_to_increase: 2.5, // rate of xhr_ul_blob_megabytes to increase
 	garbagePhp_chunkSize: 100, // size of chunks sent by garbage.php (can be different if enable_quirks is active)
 	enable_quirks: true, // enable quirks for specific browsers. currently it overrides settings to optimize for specific browsers, unless they are already being overridden with the start command
 	ping_allowPerformanceApi: true, // if enabled, the ping test will attempt to calculate the ping more precisely using the Performance API. Currently works perfectly in Chrome, badly in Edge, and not at all in Firefox. If Performance API is not supported or the result is obviously wrong, a fallback is provided.
@@ -325,6 +327,7 @@ function getIp(done) {
 // download test, calls done function when it's over
 var dlCalled = false; // used to prevent multiple accidental calls to dlTest
 function dlTest(done) {
+	hasOneGbpsDownloadSpeed = false;
 	tverb("dlTest");
 	if (dlCalled) return;
 	else dlCalled = true; // dlTest already called?
@@ -415,6 +418,9 @@ function dlTest(done) {
 				}
 				//update status
 				dlStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+				if (dlStatus > 1000 && !hasOneGbpsDownloadSpeed) {
+					hasOneGbpsDownloadSpeed = true;
+				}
 				if ((t + bonusT) / 1000.0 > settings.time_dl_max || failed) {
 					// test is over, stop streams and timer
 					if (failed || isNaN(dlStatus)) dlStatus = "Fail";
@@ -454,8 +460,14 @@ function ulTest(done) {
 	var reqsmall7 = [];
 	var reqsmall8 = [];
 
-	for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
-	req = new Blob(req);
+	if (settings.increase_xhr_ul_blob_megabytes && hasOneGbpsDownloadSpeed) {
+		var xhr_ul_blob_megabytes = settings.xhr_ul_blob_megabytes * settings.rate_of_xhr_ul_blob_megabytes_to_increase;
+		for (var i = 0; i < xhr_ul_blob_megabytes; i++) req.push(r);
+		req = new Blob(req);
+	} else {
+		for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
+		req = new Blob(req);
+	}
 
 	r = new ArrayBuffer(16384);
 	try {
