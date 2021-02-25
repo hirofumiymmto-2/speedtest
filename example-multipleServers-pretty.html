@@ -48,8 +48,12 @@ s.onend=function(aborted){ //callback for test ended/aborted
 }
 function selectServer(){ //called after loading server list
     s.selectServer(function(server){ //run server selection. When the server has been selected, display it in the UI
-        I("startStopBtn").style.display=""; //show start/stop button again
-        I("serverId").textContent=server.name; //show name of test server
+        if(server==null){
+            I("serverId").textContent="No servers available";
+        }else{
+            I("startStopBtn").style.display=""; //show start/stop button again
+            I("serverId").textContent=server.name; //show name of test server
+        }
     });
 }
 function loadServers(){ //called when the page is fully loaded
