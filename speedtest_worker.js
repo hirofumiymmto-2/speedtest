@@ -161,15 +161,6 @@ this.addEventListener("message", function(e) {
 				//Chrome mobile introduced a limitation somewhere around version 65, we have to limit XHR upload size to 4 megabytes
 				settings.xhr_ul_blob_megabytes = 4;
 			}
-			if (/^((?!chrome|android|crios|fxios).)*safari/i.test(ua)) {
-				//Safari also needs the IE11 workaround but only for the MPOT version
-				settings.forceIE11Workaround = true;
-			}
-			var isIOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-			if (isIOS) {
-				// iOS also needs the IE11 workaround (ex. Google Chrome iOS)
-				settings.forceIE11Workaround = true;
-			}
 			//telemetry_level has to be parsed and not just copied
 			if (typeof s.telemetry_level !== "undefined") settings.telemetry_level = s.telemetry_level === "basic" ? 1 : s.telemetry_level === "full" ? 2 : s.telemetry_level === "debug" ? 3 : 0; // telemetry level
 			//transform test_order to uppercase, just in case
